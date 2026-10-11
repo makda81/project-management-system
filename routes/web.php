@@ -3,6 +3,7 @@
 use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\ProjectMemberController;
 use App\Http\Controllers\TaskController;
+use App\Http\Controllers\TaskWorkflowController;
 use Illuminate\Support\Facades\Route;
 
 Route::inertia('/', 'Welcome')->name('home');
@@ -37,4 +38,8 @@ Route::middleware('auth')->group(function () {
         ->middleware('can:task.update')->name('tasks.update');
     Route::delete('tasks/{task}', [TaskController::class, 'destroy'])
         ->middleware('can:task.delete')->name('tasks.destroy');
+    // workflow
+    Route::patch('tasks/{task}/move', [TaskWorkflowController::class, 'move'])->name('tasks.move');
+    Route::post('tasks/{task}/approve', [TaskWorkflowController::class, 'approve'])->name('tasks.approve');
+    Route::post('tasks/{task}/reject', [TaskWorkflowController::class, 'reject'])->name('tasks.reject');
 });
