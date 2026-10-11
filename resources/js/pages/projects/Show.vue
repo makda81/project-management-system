@@ -1,203 +1,169 @@
 <script setup>
-// Inertia props: project includes members [{ id, name, email }] and tasks.
-// Each task has the contract fields: id, assigned_to, title, description,
-// status, priority, start_date, due_date, position, and review fields.
-import { Head } from '@inertiajs/vue3';
+// Project page: header, members panel, task board, and the dialogs.
+// Props from Laravel (via Inertia): project { ..., members[], tasks[] } and availableUsers[].
+// The page uses the default layout (same sidebar and header as the dashboard) automatically.
+import { Head, Link, router, usePage } from '@inertiajs/vue3';
+import { computed, ref } from 'vue';
+import MembersPanel from '@/components/MembersPanel.vue';
+import RejectDialog from '@/components/RejectDialog.vue';
+import TaskBoard from '@/components/TaskBoard.vue';
+import TaskDialog from '@/components/TaskDialog.vue';
+import { formatDate } from '@/lib/projectHelpers';
+import '@/styles/pm.css';
 
-defineOptions({
-    layout: {
-        breadcrumbs: [
-            { title: 'Projects', href: '/projects' },
-            { title: 'Project details', href: '/projects' },
-        ],
-    },
+const props = defineProps({
+    project: { type: Object, required: true },
+    availableUsers: { type: Array, default: () => [] },
 });
 
-defineProps({
-    project: {
-        type: Object,
-        required: true,
-    },
-    availableUsers: {
-        type: Array,
-        required: true,
-    },
-});
+const page = usePage();
+const isManager = computed(() => Boolean(page.props.auth?.isManager));
+const authUserId = computed(() => page.props.auth?.user?.id ?? null);
+
+const dialogOpen = ref(false);
+const editingTask = ref(null);
+const rejectingTask = ref(null);
+
+function openCreate() {
+    editingTask.value = null;
+    dialogOpen.value = true;
+}
+
+function openEdit(task) {
+    editingTask.value = task;
+    dialogOpen.value = true;
+}
+
+function closeDialog() {
+    dialogOpen.value = false;
+    editingTask.value = null;
+}
+
+function deleteProject() {
+    if (
+        !window.confirm(
+            `Delete the project "${props.project.name}" and all its tasks?`,
+        )
+    ) {
+        return;
+    }
+
+    router.delete(`/projects/${props.project.id}`);
+}
 </script>
 
 <template>
     <Head :title="project.name" />
 
-    <main class="project-page">
-        <header class="project-header">
-            <p class="eyebrow">Project</p>
-            <h1>{{ project.name }}</h1>
-            <p>{{ project.description || 'No description provided.' }}</p>
-            <dl class="project-dates">
-                <div>
-                    <dt>Start date</dt>
-                    <dd>{{ project.start_date }}</dd>
-                </div>
-                <div>
-                    <dt>Due date</dt>
-                    <dd>{{ project.due_date || 'No due date' }}</dd>
-                </div>
-            </dl>
-        </header>
+    <div class="project-page">
+        <Link href="/projects" class="back">&larr; All projects</Link>
 
-        <section class="tasks-section" aria-labelledby="tasks-heading">
-            <div class="section-heading">
-                <h2 id="tasks-heading">Tasks</h2>
-                <p>
-                    Tasks are read-only for now. Creating and editing comes
-                    next.
+        <header class="project-header">
+            <div>
+                <h1 class="project-name">{{ project.name }}</h1>
+                <p v-if="project.description" class="project-description">
+                    {{ project.description }}
+                </p>
+                <p class="pm-muted">
+                    {{ formatDate(project.start_date) }} &rarr;
+                    {{ formatDate(project.due_date) }}
                 </p>
             </div>
 
-            <div v-if="project.tasks.length" class="task-list">
-                <article
-                    v-for="task in project.tasks"
-                    :key="task.id"
-                    class="task-card"
+            <div v-if="isManager" class="header-actions">
+                <button
+                    type="button"
+                    class="pm-btn pm-btn-primary"
+                    @click="openCreate"
                 >
-                    <div>
-                        <h3>{{ task.title }}</h3>
-                        <p>
-                            {{ task.description || 'No description provided.' }}
-                        </p>
-                    </div>
-                    <dl class="task-details">
-                        <div>
-                            <dt>Status</dt>
-                            <dd>{{ task.status }}</dd>
-                        </div>
-                        <div>
-                            <dt>Priority</dt>
-                            <dd>{{ task.priority }}</dd>
-                        </div>
-                        <div>
-                            <dt>Due date</dt>
-                            <dd>{{ task.due_date || 'No due date' }}</dd>
-                        </div>
-                    </dl>
-                </article>
+                    New task
+                </button>
+                <button
+                    type="button"
+                    class="pm-btn pm-btn-danger"
+                    @click="deleteProject"
+                >
+                    Delete project
+                </button>
             </div>
+        </header>
 
-            <p v-else class="empty-message">
-                This project does not have any tasks yet.
-            </p>
+        <MembersPanel
+            :project="project"
+            :available-users="availableUsers"
+            :is-manager="isManager"
+        />
+
+        <section>
+            <h2 class="section-title">Task board</h2>
+            <TaskBoard
+                :tasks="project.tasks || []"
+                :members="project.members || []"
+                :auth-user-id="authUserId"
+                :is-manager="isManager"
+                @edit="openEdit"
+                @reject="rejectingTask = $event"
+            />
         </section>
-    </main>
+
+        <TaskDialog
+            :open="dialogOpen"
+            :project-id="project.id"
+            :members="project.members || []"
+            :task="editingTask"
+            @close="closeDialog"
+        />
+
+        <RejectDialog :task="rejectingTask" @close="rejectingTask = null" />
+    </div>
 </template>
 
 <style scoped>
 .project-page {
-    max-width: 1100px;
-    margin: 0 auto;
-    padding: 24px;
-}
-.project-header,
-.tasks-section {
-    border: 1px solid #d8dde3;
-    border-radius: 10px;
-    background: #fff;
-    padding: 24px;
-}
-.tasks-section {
-    margin-top: 24px;
-}
-.eyebrow {
-    margin: 0 0 6px;
-    color: #1d4ed8;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    font-size: 0.75rem;
-}
-h1,
-h2,
-h3,
-p {
-    margin-top: 0;
-}
-h1 {
-    margin-bottom: 10px;
-    font-size: 1.8rem;
-}
-h2 {
-    margin-bottom: 4px;
-    font-size: 1.25rem;
-}
-h3 {
-    margin-bottom: 6px;
-    font-size: 1rem;
-}
-.project-header > p:not(.eyebrow),
-.section-heading p,
-.task-card p,
-dd {
-    color: #5f6368;
-}
-.project-dates,
-.task-details {
     display: flex;
-    flex-wrap: wrap;
-    gap: 16px 32px;
-    margin: 20px 0 0;
+    flex-direction: column;
+    gap: 1.25rem;
+    padding: 1.25rem;
 }
-.project-dates div,
-.task-details div {
-    display: grid;
-    gap: 3px;
+
+.back {
+    font-size: 0.85rem;
+    opacity: 0.75;
+    text-decoration: none;
+    color: inherit;
 }
-dt {
-    font-size: 0.8rem;
-    font-weight: 700;
+
+.back:hover {
+    text-decoration: underline;
 }
-dd {
-    margin: 0;
-}
-.section-heading {
-    margin-bottom: 16px;
-}
-.task-list {
-    display: grid;
-    gap: 12px;
-}
-.task-card {
+
+.project-header {
     display: flex;
     justify-content: space-between;
-    gap: 20px;
-    border: 1px solid #d8dde3;
-    border-radius: 8px;
-    padding: 16px;
+    align-items: flex-start;
+    gap: 1rem;
+    flex-wrap: wrap;
 }
-.task-details {
+
+.project-name {
     margin: 0;
-    justify-content: flex-end;
+    font-size: 1.6rem;
 }
-.empty-message {
-    margin: 0;
-    border: 1px dashed #aeb7c2;
-    border-radius: 8px;
-    padding: 24px;
-    color: #5f6368;
-    text-align: center;
+
+.project-description {
+    margin: 0.4rem 0;
+    max-width: 48rem;
+    overflow-wrap: anywhere;
 }
-@media (max-width: 640px) {
-    .project-page {
-        padding: 16px;
-    }
-    .project-header,
-    .tasks-section {
-        padding: 18px;
-    }
-    .task-card {
-        display: block;
-    }
-    .task-details {
-        margin-top: 16px;
-        justify-content: flex-start;
-    }
+
+.header-actions {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.section-title {
+    margin: 0 0 0.75rem;
+    font-size: 1.15rem;
 }
 </style>
