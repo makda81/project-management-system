@@ -3,6 +3,8 @@ includes:
     - vendor/nesbot/carbon/extension.neon
 
 parameters:
+    ignoreErrors:
+        - identifier: missingType.generics
     paths:
         - app/
         - bootstrap/app.php
