@@ -11,15 +11,23 @@ class DatabaseSeeder extends Seeder
 {
     public function run(): void
     {
+        $this->call(RolesAndPermissionsSeeder::class);
+
         $manager = User::factory()->create([
             'name' => 'Maya Manager',
             'email' => 'manager@example.com',
         ]);
+        $manager->syncRoles('manager');
 
-        $members = collect(['Abel', 'Beza', 'Chala'])->map(fn ($name) => User::factory()->create([
-            'name' => $name,
-            'email' => strtolower($name).'@example.com',
-        ]));
+        $members = collect(['Abel', 'Beza', 'Chala'])->map(function ($name) {
+            $user = User::factory()->create([
+                'name' => $name,
+                'email' => strtolower($name).'@example.com',
+            ]);
+            $user->syncRoles('member');
+
+            return $user;
+        });
 
         $project = Project::create([
             'owner_id' => $manager->id,
