@@ -36,7 +36,7 @@ class Project extends Model
     {
         return $query->where(function (Builder $q) use ($user) {
             $q->where('owner_id', $user->id)
-                ->orWhereHas('members', fn(Builder $m) => $m->where('users.id', $user->id));
+                ->orWhereHas('members', fn (Builder $m) => $m->where('users.id', $user->id));
         });
     }
 }

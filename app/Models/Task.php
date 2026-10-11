@@ -8,12 +8,17 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class Task extends Model
 {
     public const TODO = 'todo';
+
     public const IN_PROGRESS = 'in_progress';
+
     public const FINISHED = 'finished';
+
     public const APPROVED = 'approved';
 
     public const STATUSES = [self::TODO, self::IN_PROGRESS, self::FINISHED, self::APPROVED];
+
     public const MOVABLE = [self::TODO, self::IN_PROGRESS, self::FINISHED];
+
     public const PRIORITIES = ['low', 'medium', 'high'];
 
     protected $fillable = [

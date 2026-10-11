@@ -16,9 +16,9 @@ class DatabaseSeeder extends Seeder
             'email' => 'manager@example.com',
         ]);
 
-        $members = collect(['Abel', 'Beza', 'Chala'])->map(fn($name) => User::factory()->create([
+        $members = collect(['Abel', 'Beza', 'Chala'])->map(fn ($name) => User::factory()->create([
             'name' => $name,
-            'email' => strtolower($name) . '@example.com',
+            'email' => strtolower($name).'@example.com',
         ]));
 
         $project = Project::create([
