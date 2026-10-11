@@ -9,19 +9,19 @@ return new class extends Migration
     /**
      * Run the migrations.
      */
-   
-public function up(): void
-{
-    Schema::create('projects', function (Blueprint $table) {
-        $table->id();
-        $table->foreignId('owner_id')->constrained('users')->cascadeOnDelete();
-        $table->string('name');
-        $table->text('description')->nullable();
-        $table->date('start_date')->nullable();
-        $table->date('due_date')->nullable();
-        $table->timestamps();
-    });
-}
+    public function up(): void
+    {
+        Schema::create('projects', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('owner_id')->constrained('users')->cascadeOnDelete();
+            $table->string('name');
+            $table->text('description')->nullable();
+            $table->date('start_date')->nullable();
+            $table->date('due_date')->nullable();
+            $table->timestamps();
+        });
+    }
+
     /**
      * Reverse the migrations.
      */
