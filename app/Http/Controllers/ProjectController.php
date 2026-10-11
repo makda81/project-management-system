@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\StoreProjectRequest;
 use App\Http\Requests\UpdateProjectRequest;
 use App\Models\Project;
+use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -38,7 +39,14 @@ class ProjectController extends Controller
 
         $project->load(['members:id,name,email', 'tasks']);
 
-        return Inertia::render('projects/Show', ['project' => $project]);
+        $availableUsers = User::role('member')
+            ->whereNotIn('id', $project->members->pluck('id'))
+            ->get(['id', 'name', 'email']);
+
+        return Inertia::render('projects/Show', [
+            'project' => $project,
+            'availableUsers' => $availableUsers,
+        ]);
     }
 
     public function update(UpdateProjectRequest $request, Project $project): RedirectResponse
