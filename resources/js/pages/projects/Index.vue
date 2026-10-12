@@ -166,11 +166,14 @@ h1 {
 h2 {
     font-size: 1.2rem;
 }
-.page-header p,
+.page-header p {
+    color: inherit;
+    opacity: 0.75;
+}
 .panel-heading p,
 .project-description,
 .empty-message {
-    color: #5f6368;
+    color: #4b5563;
 }
 .create-project-panel,
 .project-card,
@@ -178,6 +181,7 @@ h2 {
     border: 1px solid #d8dde3;
     border-radius: 10px;
     background: #fff;
+    color: #111827;
 }
 .create-project-panel {
     margin-bottom: 24px;
@@ -206,6 +210,13 @@ textarea {
     border-radius: 6px;
     padding: 9px;
     font: inherit;
+    background: #fff;
+    color: #111827;
+    color-scheme: light;
+}
+input::placeholder,
+textarea::placeholder {
+    color: #6b7280;
 }
 textarea {
     min-height: 96px;
@@ -232,7 +243,7 @@ button:disabled {
 .project-card {
     display: block;
     padding: 20px;
-    color: inherit;
+    color: #111827;
     text-decoration: none;
 }
 .project-card:hover,
@@ -255,7 +266,7 @@ dt {
 }
 dd {
     margin: 0;
-    color: #5f6368;
+    color: #4b5563;
 }
 .empty-message {
     padding: 32px;
