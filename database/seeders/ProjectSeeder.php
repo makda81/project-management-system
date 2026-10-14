@@ -55,7 +55,7 @@ class ProjectSeeder extends Seeder
 
             $memberIds = User::whereIn(
                 'email',
-                array_map(fn(string $n) => $n . '@example.com', $data['members'])
+                array_map(fn (string $n) => $n.'@example.com', $data['members'])
             )->pluck('id');
 
             $project->members()->syncWithoutDetaching($memberIds);

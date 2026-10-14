@@ -57,7 +57,7 @@ class TaskSeeder extends Seeder
                     ->where('title', $title)
                     ->first() ?? new Task;
 
-                $assigneeId = User::where('email', $assignee . '@example.com')->value('id');
+                $assigneeId = User::where('email', $assignee.'@example.com')->value('id');
                 $isReviewed = $status === Task::APPROVED || $comment !== null;
 
                 $task->forceFill([
