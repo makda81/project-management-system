@@ -236,8 +236,8 @@ function removeTask() {
     padding: 1.25rem;
     border-radius: 0.75rem;
     border: 1px solid rgba(127, 127, 127, 0.4);
-    background: Canvas;
-    color: CanvasText;
+    background: var(--card, Canvas);
+    color: var(--card-foreground, CanvasText);
 }
 
 .dialog-title {

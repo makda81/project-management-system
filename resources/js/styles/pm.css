@@ -6,16 +6,17 @@
     gap: 0.4rem;
     padding: 0.45rem 0.9rem;
     border-radius: 0.5rem;
-    border: 1px solid rgba(127, 127, 127, 0.4);
-    background: transparent;
-    color: inherit;
+    border: 1px solid rgba(127, 127, 127, 0.35);
+    background: #ffffff;
+    color: #1f2937;
     font: inherit;
     font-size: 0.875rem;
+    font-weight: 600;
     cursor: pointer;
 }
 
 .pm-btn:hover:not(:disabled) {
-    background: rgba(127, 127, 127, 0.15);
+    background: #eef2ff;
 }
 
 .pm-btn:disabled {
@@ -24,13 +25,13 @@
 }
 
 .pm-btn-primary {
-    background: #2563eb;
-    border-color: #2563eb;
+    background: linear-gradient(135deg, #7c3aed, #2563eb);
+    border-color: transparent;
     color: #fff;
 }
 
 .pm-btn-primary:hover:not(:disabled) {
-    background: #1d4ed8;
+    background: linear-gradient(135deg, #6d28d9, #1d4ed8);
 }
 
 .pm-btn-success {
@@ -44,12 +45,13 @@
 }
 
 .pm-btn-danger {
+    background: #ffffff;
     border-color: #dc2626;
     color: #dc2626;
 }
 
 .pm-btn-danger:hover:not(:disabled) {
-    background: rgba(220, 38, 38, 0.12);
+    background: #fee2e2;
 }
 
 .pm-btn-small {
@@ -75,8 +77,8 @@
     padding: 0.5rem 0.65rem;
     border-radius: 0.5rem;
     border: 1px solid rgba(127, 127, 127, 0.45);
-    background: transparent;
-    color: inherit;
+    background: #ffffff;
+    color: #1f2937;
     font: inherit;
     font-size: 0.9rem;
 }
@@ -93,9 +95,12 @@
 }
 
 .pm-panel {
-    border: 1px solid rgba(127, 127, 127, 0.3);
-    border-radius: 0.75rem;
+    background: var(--card, #ffffff);
+    color: var(--card-foreground, #1f2937);
+    border-radius: 0.9rem;
     padding: 1rem;
+    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.18);
+    box-sizing: border-box;
 }
 
 .pm-muted {
@@ -125,4 +130,34 @@
 .pm-badge-high {
     background: rgba(220, 38, 38, 0.18);
     color: #dc2626;
+}
+
+/* Progress bar */
+.pm-bar {
+    height: 0.6rem;
+    border-radius: 999px;
+    background: rgba(127, 127, 127, 0.25);
+    overflow: hidden;
+}
+
+.pm-bar-fill {
+    height: 100%;
+    border-radius: 999px;
+    background: linear-gradient(90deg, #22c55e, #16a34a);
+    transition: width 0.3s ease;
+}
+
+/*
+ * Theme-aware surface (cards and dialogs).
+ * Background and text color always come as a PAIR from the starter kit's theme variables
+ * (--card / --card-foreground), so labels can never be light-on-white in the dark theme.
+ * If those variables do not exist, the browser's own Canvas / CanvasText pair is used.
+ */
+.pm-surface {
+    background: var(--card, Canvas);
+    color: var(--card-foreground, CanvasText);
+    border: 1px solid rgba(127, 127, 127, 0.35);
+    border-radius: 0.75rem;
+    padding: 1rem;
+    box-sizing: border-box;
 }

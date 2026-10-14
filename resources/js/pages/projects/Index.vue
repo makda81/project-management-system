@@ -1,31 +1,22 @@
 <script setup>
-// Inertia prop: projects is an array of
-// { id, name, description, start_date, due_date, tasks_count }.
+// Projects list: project cards for everyone, and a "Create a project" form for managers.
+// Props from Laravel: projects[] { id, name, description, start_date, due_date, tasks_count }
+// Request: POST /projects { name, description, start_date, due_date }
+// The page uses BrandLayout (colorful header + footer) instead of the starter kit sidebar.
 import { Head, Link, useForm, usePage } from '@inertiajs/vue3';
 import { computed } from 'vue';
-import InputError from '@/components/InputError.vue';
+import BrandLayout from '@/components/BrandLayout.vue';
+import { formatDate } from '@/lib/projectHelpers';
+import '@/styles/pm.css';
 
-defineOptions({
-    layout: {
-        breadcrumbs: [
-            {
-                title: 'Projects',
-                href: '/projects',
-            },
-        ],
-    },
-});
+defineOptions({ layout: BrandLayout });
 
 defineProps({
-    projects: {
-        type: Array,
-        required: true,
-    },
+    projects: { type: Array, default: () => [] },
 });
 
 const page = usePage();
-
-const isManager = computed(() => page.props.auth.isManager);
+const isManager = computed(() => Boolean(page.props.auth?.isManager));
 
 const form = useForm({
     name: '',
@@ -35,252 +26,238 @@ const form = useForm({
 });
 
 function createProject() {
-    form.post('/projects');
+    // Empty strings become null so Laravel sees "no value".
+    form.transform((data) => ({
+        ...data,
+        description: data.description || null,
+        start_date: data.start_date || null,
+        due_date: data.due_date || null,
+    })).post('/projects', {
+        preserveScroll: true,
+        onSuccess: () => form.reset(),
+    });
+}
+
+// Trello-style colored tiles: every project gets one of these gradients.
+const TILES = [
+    'linear-gradient(135deg, #7c3aed, #4f46e5)',
+    'linear-gradient(135deg, #0ea5e9, #2563eb)',
+    'linear-gradient(135deg, #10b981, #0d9488)',
+    'linear-gradient(135deg, #f59e0b, #ea580c)',
+    'linear-gradient(135deg, #ec4899, #be185d)',
+    'linear-gradient(135deg, #ef4444, #b91c1c)',
+];
+
+function tileColor(project) {
+    return TILES[Number(project.id) % TILES.length];
+}
+
+function taskLabel(count) {
+    const n = Number(count ?? 0);
+
+    return `${n} ${n === 1 ? 'task' : 'tasks'}`;
 }
 </script>
 
 <template>
     <Head title="Projects" />
 
-    <main class="projects-page">
-        <header class="page-header">
-            <h1>Projects</h1>
-            <p>
-                View the projects you are part of and their current task totals.
+    <div class="projects-page">
+        <header>
+            <h1 class="page-title">Projects</h1>
+            <p class="pm-muted">
+                Open a project to see its board, members and progress.
             </p>
         </header>
 
-        <section v-if="isManager" class="create-project-panel">
-            <div class="panel-heading">
-                <h2>Create a project</h2>
-                <p>
-                    Add the project details before assigning members and tasks.
-                </p>
-            </div>
-            <form class="project-form" @submit.prevent="createProject">
-                <div class="form-field form-field-wide">
-                    <label for="name">Project name</label>
+        <section v-if="isManager" class="pm-surface create-card">
+            <h2 class="create-title">Create a project</h2>
+
+            <form @submit.prevent="createProject">
+                <div class="pm-field">
+                    <label for="new-project-name">Project name</label>
                     <input
-                        id="name"
+                        id="new-project-name"
                         v-model="form.name"
-                        required
-                        autocomplete="off"
-                        placeholder="Website redesign"
+                        class="pm-input"
+                        type="text"
+                        maxlength="255"
                     />
-                    <InputError :message="form.errors.name" />
+                    <p v-if="form.errors.name" class="pm-error">
+                        {{ form.errors.name }}
+                    </p>
                 </div>
 
-                <div class="form-field form-field-wide">
-                    <label for="description">Description</label>
+                <div class="pm-field">
+                    <label for="new-project-description">Description</label>
                     <textarea
-                        id="description"
+                        id="new-project-description"
                         v-model="form.description"
-                        placeholder="What is this project for?"
-                    ></textarea>
-                    <InputError :message="form.errors.description" />
-                </div>
-
-                <div class="form-field">
-                    <label for="start_date">Start date</label>
-                    <input
-                        id="start_date"
-                        v-model="form.start_date"
-                        type="date"
-                        required
+                        class="pm-input"
+                        rows="3"
                     />
-                    <InputError :message="form.errors.start_date" />
+                    <p v-if="form.errors.description" class="pm-error">
+                        {{ form.errors.description }}
+                    </p>
                 </div>
 
-                <div class="form-field">
-                    <label for="due_date">Due date</label>
-                    <input id="due_date" v-model="form.due_date" type="date" />
-                    <InputError :message="form.errors.due_date" />
+                <div class="row">
+                    <div class="pm-field">
+                        <label for="new-project-start">Start date</label>
+                        <input
+                            id="new-project-start"
+                            v-model="form.start_date"
+                            class="pm-input"
+                            type="date"
+                        />
+                        <p v-if="form.errors.start_date" class="pm-error">
+                            {{ form.errors.start_date }}
+                        </p>
+                    </div>
+
+                    <div class="pm-field">
+                        <label for="new-project-due">Due date</label>
+                        <input
+                            id="new-project-due"
+                            v-model="form.due_date"
+                            class="pm-input"
+                            type="date"
+                        />
+                        <p v-if="form.errors.due_date" class="pm-error">
+                            {{ form.errors.due_date }}
+                        </p>
+                    </div>
                 </div>
 
-                <div class="form-actions form-field-wide">
-                    <button type="submit" :disabled="form.processing">
-                        {{
-                            form.processing
-                                ? 'Creating project...'
-                                : 'Create project'
-                        }}
-                    </button>
-                </div>
+                <button
+                    type="submit"
+                    class="pm-btn pm-btn-primary"
+                    :disabled="form.processing"
+                >
+                    {{ form.processing ? 'Creating...' : 'Create project' }}
+                </button>
             </form>
         </section>
 
-        <section
-            v-if="projects.length"
-            class="project-list"
-            aria-label="Projects"
-        >
+        <p v-if="projects.length === 0" class="empty pm-muted">
+            No projects to show yet.<template v-if="isManager">
+                Create the first one above.</template
+            >
+        </p>
+
+        <div v-else class="grid">
             <Link
                 v-for="project in projects"
                 :key="project.id"
                 :href="`/projects/${project.id}`"
                 class="project-card"
+                :style="{ background: tileColor(project) }"
             >
-                <h2>{{ project.name }}</h2>
-                <p class="project-description">
-                    {{ project.description || 'No description provided.' }}
+                <strong class="project-name">{{ project.name }}</strong>
+                <p v-if="project.description" class="project-description">
+                    {{ project.description }}
                 </p>
-                <dl class="project-details">
-                    <div>
-                        <dt>Start</dt>
-                        <dd>{{ project.start_date }}</dd>
-                    </div>
-                    <div>
-                        <dt>Due</dt>
-                        <dd>{{ project.due_date || 'No due date' }}</dd>
-                    </div>
-                    <div>
-                        <dt>Tasks</dt>
-                        <dd>{{ project.tasks_count }}</dd>
-                    </div>
-                </dl>
+                <p class="pm-muted dates">
+                    {{ formatDate(project.start_date) }} &rarr;
+                    {{ formatDate(project.due_date) }}
+                </p>
+                <span class="pm-badge tasks">{{
+                    taskLabel(project.tasks_count)
+                }}</span>
             </Link>
-        </section>
-
-        <p v-else class="empty-message">There are no projects to show yet.</p>
-    </main>
+        </div>
+    </div>
 </template>
 
 <style scoped>
 .projects-page {
-    max-width: 1100px;
-    margin: 0 auto;
-    padding: 24px;
-}
-.page-header,
-.panel-heading {
-    margin-bottom: 20px;
-}
-h1,
-h2,
-p {
-    margin-top: 0;
-}
-h1 {
-    font-size: 1.8rem;
-}
-h2 {
-    font-size: 1.2rem;
-}
-.page-header p {
-    color: inherit;
-    opacity: 0.75;
-}
-.panel-heading p,
-.project-description,
-.empty-message {
-    color: #4b5563;
-}
-.create-project-panel,
-.project-card,
-.empty-message {
-    border: 1px solid #d8dde3;
-    border-radius: 10px;
-    background: #fff;
-    color: #111827;
-}
-.create-project-panel {
-    margin-bottom: 24px;
-    padding: 20px;
-}
-.project-form {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 16px;
-}
-.form-field {
-    display: grid;
-    gap: 6px;
-}
-.form-field-wide {
-    grid-column: 1 / -1;
-}
-label {
-    font-weight: 600;
-}
-input,
-textarea {
-    box-sizing: border-box;
-    width: 100%;
-    border: 1px solid #aeb7c2;
-    border-radius: 6px;
-    padding: 9px;
-    font: inherit;
-    background: #fff;
-    color: #111827;
-    color-scheme: light;
-}
-input::placeholder,
-textarea::placeholder {
-    color: #6b7280;
-}
-textarea {
-    min-height: 96px;
-    resize: vertical;
-}
-button {
-    border: 0;
-    border-radius: 6px;
-    padding: 10px 14px;
-    background: #1d4ed8;
-    color: #fff;
-    font: inherit;
-    cursor: pointer;
-}
-button:disabled {
-    cursor: wait;
-    opacity: 0.65;
-}
-.project-list {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-    gap: 16px;
-}
-.project-card {
-    display: block;
-    padding: 20px;
-    color: #111827;
-    text-decoration: none;
-}
-.project-card:hover,
-.project-card:focus {
-    border-color: #1d4ed8;
-    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
-}
-.project-details {
-    display: grid;
-    gap: 8px;
-    margin: 18px 0 0;
-}
-.project-details div {
     display: flex;
-    justify-content: space-between;
-    gap: 12px;
+    flex-direction: column;
+    gap: 1.25rem;
+    padding: 1.5rem 1.25rem;
 }
-dt {
-    font-weight: 600;
+
+.page-title {
+    margin: 0 0 0.25rem;
+    font-size: 1.6rem;
 }
-dd {
+
+.create-card {
+    max-width: 40rem;
+}
+
+.create-title {
+    margin: 0 0 1rem;
+    font-size: 1.1rem;
+}
+
+.row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.75rem;
+}
+
+.empty {
+    padding: 2rem 0;
+}
+
+.grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(16rem, 1fr));
+    gap: 1rem;
+}
+
+.project-card {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.4rem;
+    min-height: 7.5rem;
+    padding: 1rem;
+    border-radius: 0.9rem;
+    box-sizing: border-box;
+    color: #ffffff;
+    text-decoration: none;
+    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.3);
+    transition:
+        box-shadow 0.15s ease,
+        transform 0.15s ease;
+}
+
+.project-card:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+    transform: translateY(-1px);
+}
+
+.project-name {
+    font-size: 1.05rem;
+    overflow-wrap: anywhere;
+}
+
+.project-description {
     margin: 0;
-    color: #4b5563;
+    font-size: 0.88rem;
+    opacity: 0.8;
+    overflow-wrap: anywhere;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
 }
-.empty-message {
-    padding: 32px;
-    text-align: center;
+
+.dates {
+    margin: 0;
 }
-@media (max-width: 640px) {
-    .projects-page {
-        padding: 16px;
-    }
-    .project-form {
+
+.tasks {
+    background: rgba(255, 255, 255, 0.25);
+    color: #ffffff;
+}
+
+@media (max-width: 520px) {
+    .row {
         grid-template-columns: 1fr;
-    }
-    .form-field-wide {
-        grid-column: auto;
     }
 }
 </style>

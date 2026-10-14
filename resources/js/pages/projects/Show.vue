@@ -1,15 +1,27 @@
 <script setup>
-// Project page: header, members panel, task board, and the dialogs.
+// Project page: header, members panel, filter bar, task board, and the dialogs.
 // Props from Laravel (via Inertia): project { ..., members[], tasks[] } and availableUsers[].
-// The page uses the default layout (same sidebar and header as the dashboard) automatically.
+// The page uses BrandLayout (colorful header + footer) instead of the starter kit sidebar.
 import { Head, Link, router, usePage } from '@inertiajs/vue3';
 import { computed, ref } from 'vue';
+import BoardFilters from '@/components/BoardFilters.vue';
+import BrandLayout from '@/components/BrandLayout.vue';
 import MembersPanel from '@/components/MembersPanel.vue';
+import MyTasks from '@/components/MyTasks.vue';
+import ProgressSummary from '@/components/ProgressSummary.vue';
+import ProjectEditDialog from '@/components/ProjectEditDialog.vue';
 import RejectDialog from '@/components/RejectDialog.vue';
+import TeamProgress from '@/components/TeamProgress.vue';
 import TaskBoard from '@/components/TaskBoard.vue';
 import TaskDialog from '@/components/TaskDialog.vue';
-import { formatDate } from '@/lib/projectHelpers';
+import {
+    filterTasks,
+    formatDate,
+    hasActiveFilters,
+} from '@/lib/projectHelpers';
 import '@/styles/pm.css';
+
+defineOptions({ layout: BrandLayout });
 
 const props = defineProps({
     project: { type: Object, required: true },
@@ -23,6 +35,13 @@ const authUserId = computed(() => page.props.auth?.user?.id ?? null);
 const dialogOpen = ref(false);
 const editingTask = ref(null);
 const rejectingTask = ref(null);
+const projectDialogOpen = ref(false);
+
+const filters = ref({ query: '', assignee: '', priority: '' });
+const filtering = computed(() => hasActiveFilters(filters.value));
+const visibleTasks = computed(() =>
+    filterTasks(props.project.tasks || [], filters.value),
+);
 
 function openCreate() {
     editingTask.value = null;
@@ -80,6 +99,13 @@ function deleteProject() {
                 </button>
                 <button
                     type="button"
+                    class="pm-btn"
+                    @click="projectDialogOpen = true"
+                >
+                    Edit project
+                </button>
+                <button
+                    type="button"
                     class="pm-btn pm-btn-danger"
                     @click="deleteProject"
                 >
@@ -88,23 +114,43 @@ function deleteProject() {
             </div>
         </header>
 
-        <MembersPanel
-            :project="project"
-            :available-users="availableUsers"
-            :is-manager="isManager"
-        />
+        <ProgressSummary :tasks="project.tasks || []" />
 
         <section>
-            <h2 class="section-title">Task board</h2>
+            <h2 class="section-title">Board</h2>
+
+            <BoardFilters
+                v-model="filters"
+                :members="project.members || []"
+                :shown="visibleTasks.length"
+                :total="(project.tasks || []).length"
+            />
+
             <TaskBoard
-                :tasks="project.tasks || []"
+                :tasks="visibleTasks"
                 :members="project.members || []"
                 :auth-user-id="authUserId"
                 :is-manager="isManager"
+                :drag-locked="filtering"
                 @edit="openEdit"
+                @create="openCreate"
                 @reject="rejectingTask = $event"
             />
         </section>
+
+        <div class="panels">
+            <TeamProgress
+                :tasks="project.tasks || []"
+                :members="project.members || []"
+            />
+            <MembersPanel
+                :project="project"
+                :available-users="availableUsers"
+                :is-manager="isManager"
+            />
+        </div>
+
+        <MyTasks :tasks="project.tasks || []" :user-id="authUserId" />
 
         <TaskDialog
             :open="dialogOpen"
@@ -115,6 +161,12 @@ function deleteProject() {
         />
 
         <RejectDialog :task="rejectingTask" @close="rejectingTask = null" />
+
+        <ProjectEditDialog
+            :open="projectDialogOpen"
+            :project="project"
+            @close="projectDialogOpen = false"
+        />
     </div>
 </template>
 
@@ -160,6 +212,19 @@ function deleteProject() {
     display: flex;
     gap: 0.5rem;
     flex-wrap: wrap;
+}
+
+.panels {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1.25rem;
+    align-items: start;
+}
+
+@media (max-width: 900px) {
+    .panels {
+        grid-template-columns: 1fr;
+    }
 }
 
 .section-title {
