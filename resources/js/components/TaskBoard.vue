@@ -66,7 +66,7 @@ function canDrag(task) {
     }
 
     return (
-        props.isManager || Number(task.assigned_to) === Number(props.authUserId)
+        props.isManager && Number(task.assigned_to) === Number(props.authUserId)
     );
 }
 
@@ -213,7 +213,7 @@ function approve(task) {
                     over: overStatus === column.status,
                     readonly: !column.acceptsDrops,
                 }"
-                :style="{ '--accent': ACCENTS[column.status] }"
+                :style="{ '--col': ACCENTS[column.status] }"
                 @dragover="onDragOver($event, column)"
                 @dragleave="onDragLeave"
                 @drop="onDrop($event, column)"
@@ -283,7 +283,7 @@ function approve(task) {
 .board {
     display: flex;
     align-items: flex-start;
-    gap: 0.9rem;
+    gap: 1rem;
     overflow-x: auto;
     padding-bottom: 0.75rem;
 }
@@ -294,40 +294,60 @@ function approve(task) {
     max-width: 24rem;
     box-sizing: border-box;
     padding: 0.7rem;
-    border-radius: 0.8rem;
-    background: #ebecf0;
-    color: #1f2937;
-    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.25);
+    border-radius: 1rem;
+    background: var(--pm-column);
+    color: var(--foreground);
+    border: 1px solid var(--border);
+    border-top: 4px solid var(--col);
+    box-shadow: var(--pm-shadow);
+    transition: box-shadow 0.15s ease;
 }
 
 .column.over {
-    box-shadow: 0 0 0 2px var(--accent);
+    box-shadow:
+        0 0 0 2px var(--col),
+        var(--pm-shadow);
 }
 
 .column.readonly {
-    background: #e3f5e9;
+    background: color-mix(in srgb, var(--col) 8%, var(--pm-column));
 }
 
 .column-title {
     margin: 0 0 0.7rem;
-    padding: 0.45rem 0.7rem;
-    border-radius: 0.55rem;
-    background: var(--accent);
-    color: #ffffff;
-    font-size: 0.9rem;
+    padding: 0.2rem 0.3rem;
     display: flex;
     justify-content: space-between;
     align-items: center;
+    font-size: 0.8rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.column-title span:first-child {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.column-title span:first-child::before {
+    content: '';
+    width: 0.6rem;
+    height: 0.6rem;
+    border-radius: 50%;
+    background: var(--col);
 }
 
 .count {
-    min-width: 1.4rem;
+    min-width: 1.5rem;
     text-align: center;
     font-size: 0.75rem;
-    padding: 0.05rem 0.45rem;
+    padding: 0.05rem 0.5rem;
     border-radius: 999px;
-    background: rgba(255, 255, 255, 0.3);
-    color: #fff;
+    background: var(--col);
+    color: #ffffff;
+    letter-spacing: 0;
 }
 
 .column-body {
@@ -343,8 +363,8 @@ function approve(task) {
     height: 3.2rem;
     flex-shrink: 0;
     border-radius: 0.6rem;
-    border: 2px dashed var(--accent);
-    background: rgba(127, 127, 127, 0.1);
+    border: 2px dashed var(--col);
+    background: color-mix(in srgb, var(--col) 10%, transparent);
 }
 
 .empty {
@@ -352,7 +372,7 @@ function approve(task) {
     padding: 1.2rem 0;
     text-align: center;
     font-size: 0.8rem;
-    opacity: 0.55;
+    color: var(--muted-foreground);
 }
 
 .add-card {
@@ -362,17 +382,16 @@ function approve(task) {
     border: none;
     border-radius: 0.5rem;
     background: transparent;
-    color: #475569;
+    color: var(--muted-foreground);
     font: inherit;
     font-size: 0.85rem;
     text-align: left;
     cursor: pointer;
-    opacity: 0.8;
 }
 
 .add-card:hover {
-    background: rgba(15, 23, 42, 0.1);
-    opacity: 1;
+    background: var(--secondary);
+    color: var(--foreground);
 }
 
 .lock-note {
@@ -387,8 +406,8 @@ function approve(task) {
     margin: 0 0 0.9rem;
     padding: 0.6rem 0.8rem;
     border-radius: 0.5rem;
-    background: rgba(220, 38, 38, 0.14);
-    color: #dc2626;
+    background: color-mix(in srgb, var(--destructive) 14%, transparent);
+    color: var(--destructive);
     font-size: 0.875rem;
 }
 </style>

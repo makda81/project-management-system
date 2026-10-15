@@ -2,7 +2,7 @@
 // Projects list: project cards for everyone, and a "Create a project" form for managers.
 // Props from Laravel: projects[] { id, name, description, start_date, due_date, tasks_count }
 // Request: POST /projects { name, description, start_date, due_date }
-// The page uses BrandLayout (colorful header + footer) instead of the starter kit sidebar.
+// The page uses BrandLayout (header + footer) instead of the starter kit sidebar.
 import { Head, Link, useForm, usePage } from '@inertiajs/vue3';
 import { computed } from 'vue';
 import BrandLayout from '@/components/BrandLayout.vue';
@@ -38,18 +38,18 @@ function createProject() {
     });
 }
 
-// Trello-style colored tiles: every project gets one of these gradients.
-const TILES = [
-    'linear-gradient(135deg, #7c3aed, #4f46e5)',
-    'linear-gradient(135deg, #0ea5e9, #2563eb)',
-    'linear-gradient(135deg, #10b981, #0d9488)',
-    'linear-gradient(135deg, #f59e0b, #ea580c)',
-    'linear-gradient(135deg, #ec4899, #be185d)',
-    'linear-gradient(135deg, #ef4444, #b91c1c)',
+// Each project gets a calm accent colour: a thin bar on its card and a small initial badge.
+const ACCENTS = [
+    '#6366f1',
+    '#0d9488',
+    '#0284c7',
+    '#d97706',
+    '#e11d48',
+    '#7c3aed',
 ];
 
-function tileColor(project) {
-    return TILES[Number(project.id) % TILES.length];
+function accentColor(project) {
+    return ACCENTS[Number(project.id) % ACCENTS.length];
 }
 
 function taskLabel(count) {
@@ -151,8 +151,11 @@ function taskLabel(count) {
                 :key="project.id"
                 :href="`/projects/${project.id}`"
                 class="project-card"
-                :style="{ background: tileColor(project) }"
+                :style="{ '--tile': accentColor(project) }"
             >
+                <span class="project-initial">{{
+                    (project.name || '?').charAt(0).toUpperCase()
+                }}</span>
                 <strong class="project-name">{{ project.name }}</strong>
                 <p v-if="project.description" class="project-description">
                     {{ project.description }}
@@ -211,22 +214,36 @@ function taskLabel(count) {
     display: flex;
     flex-direction: column;
     align-items: flex-start;
-    gap: 0.4rem;
-    min-height: 7.5rem;
-    padding: 1rem;
+    gap: 0.45rem;
+    min-height: 8.5rem;
+    padding: 1rem 1.1rem;
     border-radius: 0.9rem;
     box-sizing: border-box;
-    color: #ffffff;
+    background: var(--card);
+    color: var(--card-foreground);
+    border: 1px solid var(--border);
+    border-top: 4px solid var(--tile);
     text-decoration: none;
-    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.3);
+    box-shadow: var(--pm-shadow);
     transition:
-        box-shadow 0.15s ease,
-        transform 0.15s ease;
+        transform 0.15s ease,
+        border-color 0.15s ease;
 }
 
 .project-card:hover {
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
-    transform: translateY(-1px);
+    transform: translateY(-2px);
+    border-color: var(--tile);
+}
+
+.project-initial {
+    display: inline-grid;
+    place-items: center;
+    width: 2rem;
+    height: 2rem;
+    border-radius: 0.55rem;
+    background: color-mix(in srgb, var(--tile) 16%, transparent);
+    color: var(--tile);
+    font-weight: 700;
 }
 
 .project-name {
@@ -237,7 +254,7 @@ function taskLabel(count) {
 .project-description {
     margin: 0;
     font-size: 0.88rem;
-    opacity: 0.8;
+    color: var(--muted-foreground);
     overflow-wrap: anywhere;
     display: -webkit-box;
     -webkit-line-clamp: 3;
@@ -251,8 +268,9 @@ function taskLabel(count) {
 }
 
 .tasks {
-    background: rgba(255, 255, 255, 0.25);
-    color: #ffffff;
+    margin-top: auto;
+    background: var(--muted);
+    color: var(--muted-foreground);
 }
 
 @media (max-width: 520px) {

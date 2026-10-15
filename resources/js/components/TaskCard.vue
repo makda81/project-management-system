@@ -107,11 +107,11 @@ function assigneeName(task) {
     align-items: flex-start;
     gap: 0.45rem;
     padding: 0.7rem 0.8rem;
-    border-radius: 0.6rem;
-    background: var(--card, Canvas);
-    color: var(--card-foreground, CanvasText);
-    border: 1px solid rgba(127, 127, 127, 0.25);
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.18);
+    border-radius: 0.7rem;
+    background: var(--card);
+    color: var(--card-foreground);
+    border: 1px solid var(--border);
+    box-shadow: 0 1px 2px rgb(0 0 0 / 10%);
     transition:
         box-shadow 0.15s ease,
         transform 0.15s ease;
@@ -120,11 +120,9 @@ function assigneeName(task) {
 .card.stripe-low {
     border-left: 5px solid #22c55e;
 }
-
 .card.stripe-medium {
     border-left: 5px solid #f59e0b;
 }
-
 .card.stripe-high {
     border-left: 5px solid #ef4444;
 }
@@ -134,7 +132,8 @@ function assigneeName(task) {
 }
 
 .card.draggable:hover {
-    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.25);
+    box-shadow: var(--pm-shadow);
+    transform: translateY(-1px);
 }
 
 .card.dragging {
@@ -154,7 +153,7 @@ function assigneeName(task) {
 .card-description {
     margin: 0;
     font-size: 0.8rem;
-    opacity: 0.75;
+    color: var(--muted-foreground);
     overflow-wrap: anywhere;
 }
 
@@ -164,8 +163,8 @@ function assigneeName(task) {
     box-sizing: border-box;
     padding: 0.4rem 0.5rem;
     border-radius: 0.4rem;
-    background: rgba(220, 38, 38, 0.12);
-    color: #dc2626;
+    background: color-mix(in srgb, var(--destructive) 14%, transparent);
+    color: var(--destructive);
     font-size: 0.78rem;
     overflow-wrap: anywhere;
 }
@@ -182,19 +181,20 @@ function assigneeName(task) {
     font-size: 0.75rem;
     padding: 0.1rem 0.45rem;
     border-radius: 0.35rem;
-    background: rgba(127, 127, 127, 0.15);
+    background: var(--muted);
+    color: var(--muted-foreground);
 }
 
 .due.overdue {
-    background: rgba(220, 38, 38, 0.15);
-    color: #dc2626;
+    background: color-mix(in srgb, var(--destructive) 15%, transparent);
+    color: var(--destructive);
     font-weight: 600;
 }
 
 .locked-note {
     margin: 0;
     font-size: 0.75rem;
-    opacity: 0.6;
+    color: var(--muted-foreground);
 }
 
 .card-actions {
