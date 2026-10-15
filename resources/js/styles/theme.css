@@ -1,0 +1,124 @@
+/* Light palette: indigo and violet on a soft blue-grey background */
+html:root {
+    --pm-column: #e9ebf7;
+    --background: #f4f5fb;
+    --foreground: #1b1f3b;
+    --card: #ffffff;
+    --card-foreground: #1b1f3b;
+    --popover: #ffffff;
+    --popover-foreground: #1b1f3b;
+    --primary: #5b4bdb;
+    --primary-foreground: #ffffff;
+    --secondary: #eceefb;
+    --secondary-foreground: #2a2f5a;
+    --muted: #eef0fa;
+    --muted-foreground: #646b8c;
+    --accent: #e8e6ff;
+    --accent-foreground: #3b2fb0;
+    --destructive: #dc2646;
+    --border: #dfe2f1;
+    --input: #d3d7ea;
+    --ring: #7b6cf0;
+    --sidebar: #ffffff;
+    --sidebar-foreground: #1b1f3b;
+    --sidebar-primary: #5b4bdb;
+    --sidebar-primary-foreground: #ffffff;
+    --sidebar-accent: #e8e6ff;
+    --sidebar-accent-foreground: #3b2fb0;
+    --sidebar-border: #dfe2f1;
+    --sidebar-ring: #7b6cf0;
+
+    --pm-page-bg: linear-gradient(
+        135deg,
+        #e9e7ff 0%,
+        #f4f5fb 45%,
+        #dff1ff 100%
+    );
+    --pm-shadow: 0 1px 2px rgb(27 31 59 / 6%), 0 8px 28px rgb(27 31 59 / 8%);
+    --pm-soft: #eeeefd;
+}
+
+/* Dark palette: applied when <html> has the "dark" class (must stay below the light block) */
+html.dark {
+    --pm-column: #0a0c14;
+    --background: #0d0f1a;
+    --foreground: #e9ebf7;
+    --card: #161929;
+    --card-foreground: #e9ebf7;
+    --popover: #161929;
+    --popover-foreground: #e9ebf7;
+    --primary: #8b7dff;
+    --primary-foreground: #0d0f1a;
+    --secondary: #20243a;
+    --secondary-foreground: #e9ebf7;
+    --muted: #1c2033;
+    --muted-foreground: #9aa1c0;
+    --accent: #2a2760;
+    --accent-foreground: #d9d4ff;
+    --destructive: #ff6b86;
+    --border: #262a42;
+    --input: #2c3150;
+    --ring: #8b7dff;
+    --sidebar: #12141f;
+    --sidebar-foreground: #e9ebf7;
+    --sidebar-primary: #8b7dff;
+    --sidebar-primary-foreground: #0d0f1a;
+    --sidebar-accent: #2a2760;
+    --sidebar-accent-foreground: #d9d4ff;
+    --sidebar-border: #262a42;
+    --sidebar-ring: #8b7dff;
+
+    --pm-page-bg: linear-gradient(
+        135deg,
+        #14122e 0%,
+        #0d0f1a 50%,
+        #0a1a2b 100%
+    );
+    --pm-shadow: 0 1px 2px rgb(0 0 0 / 40%), 0 10px 32px rgb(0 0 0 / 45%);
+    --pm-soft: #23264a;
+}
+
+body {
+    background: var(--background);
+    color: var(--foreground);
+    transition:
+        background 0.2s,
+        color 0.2s;
+}
+
+/* Overrides for the white-only parts of pm.css so they work in dark mode too */
+html .pm-btn {
+    background: var(--card);
+    color: var(--foreground);
+    border-color: var(--border);
+}
+html .pm-btn:hover:not(:disabled) {
+    background: var(--accent);
+}
+html .pm-btn-primary {
+    background: linear-gradient(135deg, #7c3aed, #4f46e5);
+    border-color: transparent;
+    color: #fff;
+}
+html .pm-btn-primary:hover:not(:disabled) {
+    background: linear-gradient(135deg, #6d28d9, #4338ca);
+}
+html .pm-btn-danger {
+    background: transparent;
+}
+html .pm-btn-danger:hover:not(:disabled) {
+    background: rgb(220 38 70 / 12%);
+}
+html .pm-input {
+    background: var(--card);
+    color: var(--foreground);
+    border-color: var(--input);
+}
+html .pm-input:focus {
+    outline: 2px solid var(--ring);
+}
+html .pm-panel,
+html .pm-surface {
+    box-shadow: var(--pm-shadow);
+    border-color: var(--border);
+}
