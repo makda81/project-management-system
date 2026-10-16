@@ -4,6 +4,7 @@ use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\ProjectMemberController;
 use App\Http\Controllers\TaskController;
 use App\Http\Controllers\TaskWorkflowController;
+use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 
 Route::inertia('/', 'Welcome')->name('home');
@@ -24,7 +25,10 @@ Route::middleware('auth')->group(function () {
         ->middleware('can:project.update')->name('projects.update');
     Route::delete('projects/{project}', [ProjectController::class, 'destroy'])
         ->middleware('can:project.delete')->name('projects.destroy');
-
+    Route::middleware('can:member.manage')->group(function () {
+        Route::get('users', [UserController::class, 'index'])->name('users.index');
+        Route::post('users', [UserController::class, 'store'])->name('users.store');
+    });
     // members
     Route::post('projects/{project}/members', [ProjectMemberController::class, 'store'])
         ->middleware('can:member.manage')->name('projects.members.store');

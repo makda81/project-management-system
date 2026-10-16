@@ -1,5 +1,5 @@
 <script setup>
-// Page frame used by the Projects and Project pages:
+// Page frame used by the Projects, Team and Project pages:
 // top header (logo + links + user) -> page content (slot) -> footer.
 // A page opts in with:  defineOptions({ layout: BrandLayout })
 import { Link, router, usePage } from '@inertiajs/vue3';
@@ -11,14 +11,16 @@ const APP_NAME = 'Project Management System';
 
 const page = usePage();
 const user = computed(() => page.props.auth?.user ?? null);
+const isManager = computed(() => Boolean(page.props.auth?.isManager));
 const roleLabel = computed(() =>
-    page.props.auth?.isManager ? 'Project Manager' : 'Member',
+    isManager.value ? 'Project Manager' : 'Member',
 );
 const year = new Date().getFullYear();
 
 const path = computed(() => (page.url || '').split('?')[0]);
 const onProjects = computed(() => path.value.startsWith('/projects'));
 const onDashboard = computed(() => path.value.startsWith('/dashboard'));
+const onTeam = computed(() => path.value.startsWith('/users'));
 
 function logout() {
     router.post('/logout');
@@ -71,6 +73,13 @@ function logout() {
                     class="link"
                     :class="{ active: onProjects }"
                     >Projects</Link
+                >
+                <Link
+                    v-if="isManager"
+                    href="/users"
+                    class="link"
+                    :class="{ active: onTeam }"
+                    >Team</Link
                 >
             </nav>
 
