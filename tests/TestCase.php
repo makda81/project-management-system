@@ -13,4 +13,12 @@ abstract class TestCase extends BaseTestCase
             $this->markTestSkipped($message ?? "Fortify feature [{$feature}] is not enabled.");
         }
     }
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        // Tests check the backend, so they don't need the built frontend files.
+        $this->withoutVite();
+    }
 }
